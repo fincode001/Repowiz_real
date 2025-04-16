@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReportWiz Mockup - Enhanced Simulation (Fixed v2)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wizard-container">
+        <h1>✨ ReportWiz : AI 문서 생성 마법사 ✨</h1>
+
+        <div class="step-container">
+            <h2>Step 1: 분석할 파일 업로드</h2>
+            <div class="form-group">
+                <label for="file-input">파일 선택 (다중 선택 가능):</label>
+                <input type="file" id="file-input" multiple>
+                <div id="file-list" class="file-list-box">선택된 파일 없음</div>
+            </div>
+            <div class="form-group">
+                <label>요약 수준 선택:</label>
+                <div class="radio-group">
+                    <input type="radio" id="summary-high" name="summary_level" value="High" checked>
+                    <label for="summary-high">상 (핵심 요약)</label>
+                    <input type="radio" id="summary-medium" name="summary_level" value="Medium">
+                    <label for="summary-medium">중 (중간 요약)</label>
+                    <input type="radio" id="summary-low" name="summary_level" value="Low">
+                    <label for="summary-low">하 (상세 요약)</label>
+                </div>
+            </div>
+            <button id="analyze-button" class="button" disabled>파일 분석 시작 (시뮬레이션)</button>
+            <div id="analysis-loading" class="loading" style="display: none;">분석 중...</div>
+        </div>
+
+        <div id="analysis-results-section" class="step-container" style="display: none;">
+            <h2>Step 2: AI 분석 결과 (시뮬레이션)</h2>
+            <div class="analysis-output">
+                <h3>추출된 텍스트 (요약):</h3>
+                <textarea id="extracted-text" rows="5" readonly></textarea>
+                <h3>주요 분석 인사이트:</h3>
+                <pre id="analysis-insights"></pre>
+                 <p><em>참고: 위 내용은 실제 AI 분석 결과가 아닌 시뮬레이션 데이터입니다.</em></p>
+            </div>
+        </div>
+
+        <div id="filter-section" class="step-container" style="display: none;">
+            <h2>Step 3: 생성할 문서 스타일 및 형식 선택</h2>
+             {/* filter-grid로 감싸 필터들을 2열로 배치 */}
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label for="doc_purpose">문서 용도:</label>
+                    <select id="doc_purpose" name="doc_purpose">
+                        <option value="">-- 선택하세요 --</option>
+                        {/* JavaScript로 채워짐 */}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="doc_subtype">문서 세부 종류:</label>
+                    <select id="doc_subtype" name="doc_subtype" disabled>
+                        <option value="">-- 문서 용도를 먼저 선택하세요 --</option>
+                        {/* JavaScript로 채워짐 */}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="output_format_select">출력 파일 형식:</label>
+                    <select id="output_format_select" name="output_format_select" disabled>
+                        <option value="">-- 세부 종류를 선택하세요 --</option>
+                        <option value="PPT">PPT (프레젠테이션)</option>
+                        <option value="Word">Word (문서)</option>
+                        <option value="PDF">PDF (문서)</option>
+                        <option value="HTML">HTML (웹페이지)</option>
+                        <option value="Markdown">Markdown (텍스트)</option>
+                        <option value="Mindmap">Mindmap (마인드맵 구조)</option>
+                        <option value="HWP">HWP (아래아한글 - 시뮬레이션)</option>
+                        <option value="Excel">Excel (데이터 요약)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="page_spec_select">페이지 규격/방향:</label>
+                    <select id="page_spec_select" name="page_spec_select" disabled>
+                        <option value="">-- 세부 종류를 선택하세요 --</option>
+                        <option value="16:9">16:9 (가로 와이드)</option>
+                        <option value="4:3">4:3 (가로 표준)</option>
+                        <option value="A4_Portrait">A4 세로</option>
+                        <option value="A4_Landscape">A4 가로</option>
+                        <option value="Web_Responsive">웹페이지 (반응형)</option>
+                    </select>
+                </div>
+            </div> {/* End of filter-grid */}
+
+
+             <div id="details-section" class="details-preview" style="display: none;">
+                <h3>선택된 스타일 미리보기 (참고용)</h3>
+                {/* detail-grid로 감싸 상세 정보 항목들을 2열로 배치 */}
+                <div class="detail-grid">
+                    <div><label>타겟 독자:</label> <span id="target_audience"></span></div>
+                    <div><label>작성 목적:</label> <span id="writing_goal"></span></div>
+                    <div><label>추천 출력 형식:</label> <span id="output_format_recommend"></span></div>
+                    <div><label>추천 테마 스타일:</label> <span id="visual_theme"></span></div>
+                    <div class="color-detail"><label>추천 컬러 팔레트:</label> <span id="color_palette"></span><div id="color-preview" class="color-preview-box"></div></div>
+                    <div><label>추천 레이아웃:</label> <span id="layout_structure"></span></div>
+                    <div><label>추천 분석 강조:</label> <span id="insight_focus"></span></div>
+                    <div><label>추천 시각 자료:</label> <span id="visual_suggestion"></span></div>
+                    <div><label>추천 문체/어조:</label> <span id="tone_style"></span></div>
+                </div> {/* End of detail-grid */}
+            </div>
+            <button id="generate-button" class="button" disabled>문서 생성 시작 (시뮬레이션)</button>
+             <div id="generation-loading" class="loading" style="display: none;">문서 생성 중...</div>
+        </div>
+
+        <div id="generated-doc-section" class="step-container" style="display: none;">
+            <h2>Step 4: 생성된 문서 (시뮬레이션)</h2>
+            <h3 id="generated-doc-title"></h3>
+            <div id="generated-content-wrapper">
+                 <textarea id="generated-content" rows="15" readonly></textarea>
+            </div>
+            <p id="simulation-notice"><em>참고: 위 내용은 시뮬레이션 결과입니다. 실제 구현 시에는 선택한 형식으로 다운로드 기능이 제공될 수 있습니다.</em></p>
+        </div>
+
+    </div> {/* data.js는 이전 Full Version 그대로 사용 */}
+    <script src="data.js"></script>
+    {/* script.js는 아래 수정된 버전 사용 */}
+    <script src="script.js"></script>
+</body>
+</html>

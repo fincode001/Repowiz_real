@@ -1,0 +1,317 @@
+﻿/* --- 기본 스타일 및 이전 단계 스타일 유지 --- */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* 시스템 폰트 우선 사용 */
+    margin: 20px;
+    background-color: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.wizard-container {
+    background-color: #fff;
+    padding: 30px 40px; /* 패딩 조정 */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 800px; /* 너비 살짝 증가 */
+    margin: 30px auto;
+}
+
+h1 {
+    text-align: center;
+    color: #0d47a1; /* 좀 더 진한 파랑 */
+    margin-bottom: 40px;
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+h2 {
+    color: #1565c0; /* 중간톤 파랑 */
+    border-bottom: 2px solid #e3f2fd; /* 연한 파랑 밑줄 */
+    padding-bottom: 10px;
+    margin-top: 30px;
+    margin-bottom: 25px;
+    font-size: 1.4em;
+    font-weight: 500;
+}
+
+h3 {
+    color: #1e88e5; /* 밝은 파랑 */
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-size: 1.15em;
+    font-weight: 500;
+}
+
+.step-container {
+    margin-bottom: 40px;
+    padding: 25px 30px; /* 패딩 조정 */
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #ffffff;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500; /* 약간 가늘게 */
+    color: #444;
+    font-size: 0.95em;
+}
+
+select, input[type="file"], textarea {
+    width: 100%;
+    padding: 10px 12px; /* 패딩 조정 */
+    border: 1px solid #ced4da; /* 연한 회색 테두리 */
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.95em; /* 폰트 크기 살짝 줄임 */
+    background-color: #fff;
+    transition: border-color 0.2s ease-in-out;
+}
+
+select:focus, textarea:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+
+input[type="file"] {
+    padding: 8px 12px;
+    line-height: 1.5; /* 파일 입력 필드 높이 조절 */
+}
+/* 파일 인풋 버튼 스타일 개선 (브라우저마다 다를 수 있음) */
+input[type="file"]::file-selector-button {
+    padding: 8px 15px;
+    margin-right: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #e9ecef;
+    color: #495057;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+input[type="file"]::file-selector-button:hover {
+    background-color: #d3d9df;
+}
+
+
+textarea {
+    resize: vertical;
+    background-color: #f8f9fa; /* 약간 다른 배경색 */
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; /* 가독성 좋은 한글 폰트 */
+    line-height: 1.6;
+    color: #333;
+}
+
+textarea:read-only {
+    background-color: #f1f3f5; /* 더 연한 회색 */
+    cursor: default;
+    border-color: #e0e0e0;
+}
+
+select:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    opacity: 0.7; /* 비활성화 시 약간 투명하게 */
+}
+
+.button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px; /* 버튼 패딩 조정 */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 10px;
+}
+
+.button:hover:not(:disabled) {
+    background-color: #0056b3;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.button:disabled {
+    background-color: #adb5bd; /* 비활성화 색상 변경 */
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+
+/* 파일 리스트 스타일 */
+.file-list-box {
+    margin-top: 10px;
+    padding: 12px 15px; /* 패딩 증가 */
+    border: 1px dashed #adb5bd; /* 테두리 색상 변경 */
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    min-height: 45px; /* 높이 살짝 증가 */
+    font-size: 0.9em;
+    color: #495057;
+    word-break: break-all;
+    line-height: 1.5; /* 줄 간격 추가 */
+}
+
+/* 라디오 버튼 그룹 */
+.radio-group label {
+    display: inline-block;
+    margin-right: 20px; /* 간격 증가 */
+    font-weight: normal;
+    font-size: 0.95em;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+.radio-group input[type="radio"] {
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+
+/* 로딩 인디케이터 */
+.loading {
+    margin-top: 15px;
+    color: #1976d2; /* 약간 다른 파랑 */
+    font-weight: 500;
+    text-align: center;
+    padding: 10px;
+}
+
+/* 분석 결과 영역 */
+.analysis-output {
+    padding: 20px; /* 패딩 증가 */
+    background-color: #fdfdfd;
+    border: 1px solid #e9ecef; /* 연한 테두리 */
+    border-radius: 4px;
+    margin-top: 15px; /* 상단 마진 추가 */
+}
+
+.analysis-output pre {
+    background-color: #f1f3f5; /* 배경색 변경 */
+    padding: 15px; /* 패딩 증가 */
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace; /* 고정폭 폰트 변경 */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 180px; /* 높이 증가 */
+    overflow-y: auto;
+    font-size: 0.9em;
+    color: #495057;
+    border: 1px solid #dee2e6; /* 테두리 추가 */
+}
+
+/* --- Step 3: 필터 그리드 --- */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2열 유지 */
+    gap: 20px 30px; /* 간격 조정 */
+    margin-bottom: 30px; /* 하단 마진 증가 */
+}
+
+/* --- 상세 정보 미리보기 --- */
+.details-preview {
+    margin-top: 30px;
+    padding: 25px; /* 패딩 증가 */
+    background-color: #e3f2fd; /* 더 연한 파랑 배경 */
+    border: 1px solid #bbdefb; /* 테두리 색상 변경 */
+    border-radius: 5px;
+}
+.details-preview h3 {
+    margin-top: 0;
+    margin-bottom: 20px; /* 마진 증가 */
+    color: #0d47a1;
+    font-size: 1.1em;
+    font-weight: 600; /* 약간 더 굵게 */
+    border-bottom: 1px solid #90caf9; /* 밑줄 색상 변경 */
+    padding-bottom: 8px;
+}
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 25px; /* 간격 조정 */
+}
+
+.detail-grid > div {
+   padding: 5px 0;
+   display: flex;
+   align-items: flex-start;
+}
+
+.detail-grid label {
+    font-weight: 500;
+    color: #1e88e5; /* 레이블 색상 변경 */
+    min-width: 120px; /* 최소 너비 유지 */
+    flex-shrink: 0;
+    margin-right: 10px;
+    margin-bottom: 0;
+    font-size: 0.9em; /* 폰트 크기 통일 */
+}
+.detail-grid span {
+    color: #333;
+    word-break: keep-all;
+    font-size: 0.9em; /* 폰트 크기 통일 */
+}
+
+.color-detail {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+}
+.color-detail label { /* 컬러 팔레트 레이블 정렬 */
+    margin-bottom: 0;
+}
+
+.color-preview-box {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    padding: 0;
+    height: 20px;
+    flex-wrap: wrap;
+}
+
+.color-swatch {
+    display: inline-block;
+    width: 18px; /* 크기 살짝 줄임 */
+    height: 18px;
+    margin-right: 4px;
+    margin-bottom: 3px;
+    border: 1px solid #bdbdbd; /* 테두리 색상 변경 */
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+/* --- 생성된 문서 결과 --- */
+#generated-content-wrapper {
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff; /* 배경 흰색으로 */
+    padding: 20px; /* 패딩 증가 */
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+#generated-content {
+    width: 100%;
+    height: 400px; /* 높이 더 증가 */
+    font-size: 0.95em;
+    line-height: 1.6;
+    border: none;
+    background-color: transparent;
+    padding: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #333; /* 텍스트 색상 명시 */
+}
+
+#simulation-notice {
+    margin-top: 15px;
+    font-size: 0.85em;
+    color: #666;
+    text-align: center;
+}
