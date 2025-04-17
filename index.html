@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReportWiz Mockup - Enhanced Simulation (Fixed v2)</title>
+    <title>ReportWiz Mockup - Realistic Feel</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,24 +28,22 @@
                     <label for="summary-low">하 (상세 요약)</label>
                 </div>
             </div>
-            <button id="analyze-button" class="button" disabled>파일 분석 시작 (시뮬레이션)</button>
+            <button id="analyze-button" class="button" disabled>파일 분석 시작</button>
             <div id="analysis-loading" class="loading" style="display: none;">분석 중...</div>
         </div>
 
         <div id="analysis-results-section" class="step-container" style="display: none;">
-            <h2>Step 2: AI 분석 결과 (시뮬레이션)</h2>
+            <h2>Step 2: AI 분석 결과</h2> <!-- 제목 수정됨 -->
             <div class="analysis-output">
                 <h3>추출된 텍스트 (요약):</h3>
                 <textarea id="extracted-text" rows="5" readonly></textarea>
                 <h3>주요 분석 인사이트:</h3>
                 <pre id="analysis-insights"></pre>
-                 <p><em>참고: 위 내용은 실제 AI 분석 결과가 아닌 시뮬레이션 데이터입니다.</em></p>
             </div>
         </div>
 
         <div id="filter-section" class="step-container" style="display: none;">
             <h2>Step 3: 생성할 문서 스타일 및 형식 선택</h2>
-             {/* filter-grid로 감싸 필터들을 2열로 배치 */}
             <div class="filter-grid">
                 <div class="form-group">
                     <label for="doc_purpose">문서 용도:</label>
@@ -67,14 +65,7 @@
                     <label for="output_format_select">출력 파일 형식:</label>
                     <select id="output_format_select" name="output_format_select" disabled>
                         <option value="">-- 세부 종류를 선택하세요 --</option>
-                        <option value="PPT">PPT (프레젠테이션)</option>
-                        <option value="Word">Word (문서)</option>
-                        <option value="PDF">PDF (문서)</option>
-                        <option value="HTML">HTML (웹페이지)</option>
-                        <option value="Markdown">Markdown (텍스트)</option>
-                        <option value="Mindmap">Mindmap (마인드맵 구조)</option>
-                        <option value="HWP">HWP (아래아한글 - 시뮬레이션)</option>
-                        <option value="Excel">Excel (데이터 요약)</option>
+                        {/* JavaScript로 필터링되어 채워짐 */}
                     </select>
                 </div>
 
@@ -89,12 +80,19 @@
                         <option value="Web_Responsive">웹페이지 (반응형)</option>
                     </select>
                 </div>
-            </div> {/* End of filter-grid */}
+            </div>
 
+             <!-- *** 템플릿 구조 보기 버튼 추가됨 *** -->
+            <div style="margin-top: 15px; margin-bottom: 15px;">
+                <button id="toggle-template-view-button" class="button" style="background-color: #6c757d; font-size: 0.9em;">템플릿 구조 보기</button>
+            </div>
+             <!-- *** 템플릿 구조 표시 영역 추가됨 *** -->
+            <div id="template-structure-view" class="analysis-output" style="display: none; margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                <h3>지원되는 템플릿 구조</h3>
+            </div>
 
              <div id="details-section" class="details-preview" style="display: none;">
                 <h3>선택된 스타일 미리보기 (참고용)</h3>
-                {/* detail-grid로 감싸 상세 정보 항목들을 2열로 배치 */}
                 <div class="detail-grid">
                     <div><label>타겟 독자:</label> <span id="target_audience"></span></div>
                     <div><label>작성 목적:</label> <span id="writing_goal"></span></div>
@@ -105,24 +103,40 @@
                     <div><label>추천 분석 강조:</label> <span id="insight_focus"></span></div>
                     <div><label>추천 시각 자료:</label> <span id="visual_suggestion"></span></div>
                     <div><label>추천 문체/어조:</label> <span id="tone_style"></span></div>
-                </div> {/* End of detail-grid */}
+                </div>
             </div>
-            <button id="generate-button" class="button" disabled>문서 생성 시작 (시뮬레이션)</button>
-             <div id="generation-loading" class="loading" style="display: none;">문서 생성 중...</div>
+            <button id="generate-button" class="button" disabled>미리보기 생성 (Step 4)</button>
+             <div id="generation-loading" class="loading" style="display: none;">생성 중...</div>
         </div>
 
+        <!-- *** Step 4: 미리보기 (구 3.5) *** -->
+        <div id="preview-section" class="step-container" style="display: none;">
+            <h2>Step 4: 생성될 내용 미리보기</h2>
+            <div class="analysis-output">
+                <p id="preview-title" style="font-weight: bold; font-size: 1.1em; margin-top: 0; margin-bottom: 15px;"></p>
+                <h3>주요 내용 구조 (예상 목차):</h3>
+                <pre id="preview-structure"></pre>
+                <h3>핵심 요약 (미리보기):</h3>
+                <pre id="preview-summary"></pre>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="final-generate-button" class="button">최종 문서 생성 (Step 5)</button>
+                <button id="edit-options-button" class="button" style="background-color: #6c757d;">옵션 수정 (Step 3)</button>
+            </div>
+        </div>
+
+        <!-- *** Step 5: 생성된 문서 저장 (구 4) *** -->
         <div id="generated-doc-section" class="step-container" style="display: none;">
-            <h2>Step 4: 생성된 문서 (시뮬레이션)</h2>
+            <h2>Step 5: 생성된 문서 저장</h2> <!-- 제목 수정됨 -->
             <h3 id="generated-doc-title"></h3>
             <div id="generated-content-wrapper">
                  <textarea id="generated-content" rows="15" readonly></textarea>
             </div>
-            <p id="simulation-notice"><em>참고: 위 내용은 시뮬레이션 결과입니다. 실제 구현 시에는 선택한 형식으로 다운로드 기능이 제공될 수 있습니다.</em></p>
+            <p id="simulation-notice"><em>(안내 문구 또는 다운로드 버튼이 여기에 표시됩니다)</em></p>
         </div>
 
-    </div> {/* data.js는 이전 Full Version 그대로 사용 */}
+    </div>
     <script src="data.js"></script>
-    {/* script.js는 아래 수정된 버전 사용 */}
     <script src="script.js"></script>
 </body>
 </html>
