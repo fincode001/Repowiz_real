@@ -193,17 +193,18 @@ select:disabled {
 }
 
 .analysis-output pre {
-    background-color: #f1f3f5; /* 배경색 변경 */
-    padding: 15px; /* 패딩 증가 */
+    background-color: #f8f9fa; /* 연한 배경색 유지 */
+    border: 1px solid #dee2e6;
     border-radius: 4px;
-    font-family: 'Consolas', 'Monaco', monospace; /* 고정폭 폰트 유지 (코드/결과 표시에 적합) */
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    max-height: 180px; /* 높이 증가 */
-    overflow-y: auto;
+    padding: 15px; /* 내부 여백 추가 */
+    white-space: pre-wrap;       /* 자동 줄바꿈 허용 */
+    word-wrap: break-word;       /* 긴 단어 줄바꿈 */
+    font-family: var(--mono-font);
     font-size: 0.9em;
-    color: #495057;
-    border: 1px solid #dee2e6; /* 테두리 추가 */
+    color: #495057; /* 약간 어두운 텍스트 색상 */
+    margin-top: 5px; /* 위쪽 여백 추가 */
+    margin-bottom: 15px; /* 아래쪽 여백 추가 */
+    max-height: none; /* 미리보기 pre 높이 제한 해제 (필요시 재조정) */
 }
 
 /* --- Step 3: 필터 그리드 --- */
@@ -325,6 +326,23 @@ select:disabled {
 
 #preview-section pre {
     max-height: 150px; /* 미리보기 영역 높이 조절 */
+}
+
+/* Step 4: 미리보기 섹션의 이미지 스타일 */
+#preview-sample-image {
+    display: none; /* 기본 숨김 */
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#preview-image-placeholder {
+    display: none; /* 기본 숨김 */
+    color: #888;
+    font-size: 0.9em;
+    margin-top: 10px;
 }
 
 /* --- 반응형 디자인을 위한 미디어 쿼리 --- */

@@ -1,12 +1,89 @@
 ﻿// ==========================================================================
+// ========================== Supabase 클라이언트 초기화 ===================
+// ==========================================================================
+const SUPABASE_URL = 'https://umrjwedivrmemhtkukza.supabase.co'; // <-- 여기에 실제 Supabase 프로젝트 URL을 입력하세요!
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtcmp3ZWRpdnJtZW1odGt1a3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4NTI3MzQsImV4cCI6MjA2MDQyODczNH0.oQAnec7Ir2nUQhyvhAnxzeVayhYUW-ViVk0ufAqqtJA'; // <-- 여기에 실제 Supabase anon 키를 입력하세요!
+
+let supabase = null;
+try {
+  // Check if the Supabase library object and its createClient method exist on the window object
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    // Check if URL and Key are provided and are not the placeholders
+    if (SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY_PLACEHOLDER') {
+       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Use window.supabase.createClient
+       console.log('Supabase client initialized successfully.');
+    } else {
+       console.error('Supabase URL or Anon Key is missing or still set to placeholder in script.js.');
+       alert('Supabase 설정이 필요합니다. script.js 파일의 URL과 Key 값을 확인해주세요.');
+       // Keep supabase as null
+    }
+  } else {
+     console.error('Supabase library (window.supabase.createClient) not found. Check CDN script tag or network connection.');
+     alert('Supabase 라이브러리 로딩 오류. 페이지를 새로고침하거나 관리자에게 문의하세요.');
+     // Keep supabase as null
+  }
+} catch (error) {
+  console.error('Error during Supabase client initialization attempt:', error);
+  alert('Supabase 초기화 중 예기치 않은 오류 발생.');
+  // Keep supabase as null
+}
+
+
+// ==========================================================================
 // ========================== 전역 변수 선언 ==============================
 // ==========================================================================
 let selectedFilesArray = []; // 선택된 파일 목록 관리 배열
-let currentAnalysisResults = { summary: null, insights: null, isRealData: false }; // 분석 결과 저장
+let currentAnalysisResults = null; // 분석 결과 저장 (초기값 null로 변경)
+let reportWizTemplates = []; // 템플릿 데이터 저장 (이제 DB에서 불러옴)
+let templatesLoading = true; // 템플릿 로딩 상태 플래그 추가
 
 // ==========================================================================
 // ========================== 함수 정의 영역 ==============================
 // ==========================================================================
+
+// --- Supabase에서 템플릿 데이터 가져오는 함수 ---
+async function fetchTemplates() {
+  console.log('Attempting to fetch templates from Supabase...');
+  templatesLoading = true; // 로딩 시작
+  const purposeSelect = document.getElementById('doc_purpose'); // 로딩 중 비활성화 위해 참조
+  if (purposeSelect) purposeSelect.disabled = true;
+
+  if (!supabase) {
+    console.error('Supabase client is not initialized. Cannot fetch templates.');
+    templatesLoading = false;
+    if (purposeSelect) purposeSelect.innerHTML = '<option value="">DB 연결 오류</option>';
+    return; // Supabase 클라이언트 없으면 종료
+  }
+
+  try {
+    // templates 테이블에서 모든 컬럼(*) 선택
+    const { data, error } = await supabase
+      .from('templates')
+      .select('*')
+      .order('doc_purpose', { ascending: true }) // 용도별로 정렬 (선택 사항)
+      .order('doc_subtype', { ascending: true }); // 세부 종류별로 정렬 (선택 사항)
+
+    if (error) {
+      console.error('Error fetching templates:', error);
+      alert('템플릿 데이터 로딩 중 오류 발생: ' + error.message);
+      reportWizTemplates = []; // 오류 시 빈 배열로
+      if (purposeSelect) purposeSelect.innerHTML = '<option value="">데이터 로딩 오류</option>';
+    } else {
+      reportWizTemplates = data || []; // 전역 변수에 저장
+      console.log(`Successfully fetched ${reportWizTemplates.length} templates from Supabase.`);
+      // *** 데이터 로딩 성공 후 드롭다운 채우기 ***
+      populatePurposeDropdown();
+      if (purposeSelect) purposeSelect.disabled = false; // 데이터 로딩 후 활성화
+    }
+  } catch (err) {
+    console.error('Unexpected error during fetchTemplates:', err);
+    alert('템플릿 데이터 처리 중 예기치 않은 오류 발생.');
+    reportWizTemplates = [];
+    if (purposeSelect) purposeSelect.innerHTML = '<option value="">처리 오류</option>';
+  } finally {
+    templatesLoading = false; // 로딩 완료
+  }
+}
 
 // --- 파일 크기 포맷 함수 ---
 function formatFileSize(bytes, decimals = 2) {
@@ -70,7 +147,7 @@ function resetSubsequentStepsUI() {
     hideTemplateStructureView(); // 템플릿 보기
 
     // 분석 데이터 초기화
-    currentAnalysisResults = { summary: null, insights: null, isRealData: false };
+    currentAnalysisResults = null;
     const extractedTextarea = document.getElementById('extracted-text');
     const analysisInsightsPre = document.getElementById('analysis-insights');
     if(extractedTextarea) extractedTextarea.value = "";
@@ -129,39 +206,84 @@ function readFileAsText(file) {
     });
 }
 
-// --- 파일 읽고 분석 시뮬레이션 (개선 버전) ---
+// --- 파일 읽고 분석 시뮬레이션 (강화 버전 + 샘플 제거) ---
 async function readFileAndSimulateAnalysis(files, selectedSummaryLevel) {
     console.log("Simulating analysis for files:", files.map(f=>f.name), "Level:", selectedSummaryLevel);
     let processedText = "";
     let fileReadSuccess = false;
-    let baseTitle = "문서";
+    let baseTitle = "문서"; // 기본 제목 초기화
+    let fileNameForDisplay = ""; // 파일명 표시용
 
     const readableFiles = files.filter(file => /\.(txt|md)$/i.test(file.name));
     if (readableFiles.length > 0) {
-        baseTitle = readableFiles[0].name.replace(/\.[^/.]+$/, "");
+        baseTitle = readableFiles[0].name.replace(/\.[^/.]+$/, ""); // (샘플) 제거
+        fileNameForDisplay = readableFiles[0].name;
         try {
             processedText = await readFileAsText(readableFiles[0]);
             fileReadSuccess = true;
-        } catch (error) { processedText = `[오류: ${readableFiles[0].name} 읽기 실패]`; }
+        } catch (error) { processedText = `[오류: ${fileNameForDisplay} 읽기 실패]`; }
     } else if (files.length > 0) {
-        baseTitle = files[0].name.replace(/\.[^/.]+$/, "");
-        processedText = `[알림: ${files[0].name} 형식 읽기 불가]`;
+        baseTitle = files[0].name.replace(/\.[^/.]+$/, ""); // (샘플) 제거
+        fileNameForDisplay = files[0].name;
+        processedText = `[알림: ${fileNameForDisplay} 형식 읽기 불가]`;
     } else { processedText = "[분석 오류: 파일 정보 없음]"; }
 
-    let simulatedSummary = `[${baseTitle}] 분석 결과 (${selectedSummaryLevel} 수준 요약):\n\n`;
+    // --- 분석 결과 구조화 (시뮬레이션) ---
+    let analysisResult = {
+        sourceFileName: fileNameForDisplay || "(파일 없음)",
+        detectedLanguage: "한국어 (추정)",
+        wordCount: fileReadSuccess ? processedText.split(/\s+/).length : 0,
+        extractedKeywords: [], // 키워드 추출 (시뮬레이션)
+        keyTopics: [], // 주요 토픽 (시뮬레이션)
+        sentimentAnalysis: "중립 (추정)", // 감성 분석 (시뮬레이션)
+        potentialIssues: [], // 잠재적 이슈 (시뮬레이션)
+        detailedSummary: "", // 상세 요약
+        isRealData: fileReadSuccess
+    };
+
+    // 시뮬레이션: 텍스트 기반 키워드/토픽/이슈 생성
+    if (fileReadSuccess && processedText.length > 0) {
+        const words = processedText.toLowerCase().match(/\b[가-힣a-zA-Z]{2,}\b/g) || [];
+        const wordFreq = words.reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
+        analysisResult.extractedKeywords = Object.entries(wordFreq)
+                                               .sort(([,a], [,b]) => b - a)
+                                               .slice(0, 5)
+                                               .map(([word]) => word);
+        // 간단한 토픽/이슈 시뮬레이션
+        if (processedText.includes("문제") || processedText.includes("이슈")) analysisResult.potentialIssues.push("본문 내 '문제/이슈' 언급 확인 필요");
+        if (processedText.includes("제안") || processedText.includes("개선")) analysisResult.keyTopics.push("개선 제안 관련 내용 포함 (추정)");
+        if (processedText.includes("계약") || processedText.includes("조건")) analysisResult.keyTopics.push("계약 조건 관련 내용 포함 (추정)");
+        if (analysisResult.extractedKeywords.length > 0) analysisResult.keyTopics.push(`주요 키워드: ${analysisResult.extractedKeywords.join(', ')}`);
+        else analysisResult.keyTopics.push("일반 문서 내용 (추정)");
+        analysisResult.potentialIssues.push("시뮬레이션된 잠재적 검토사항"); // 기본 이슈 추가
+    } else {
+        analysisResult.extractedKeywords = ["N/A"];
+        analysisResult.keyTopics = ["파일 내용 분석 불가"];
+        analysisResult.potentialIssues = ["파일 읽기 실패 또는 내용 없음"];
+    }
+
+    // 요약 수준별 상세 요약 생성 (샘플 제거)
+    let summaryHeader = `[${baseTitle}] 분석 결과 (${selectedSummaryLevel} 수준 요약):\n`;
     const previewText = fileReadSuccess ? processedText.substring(0, 300) + (processedText.length > 300 ? '...' : '') : '(내용 미리보기 불가)';
 
-    if (selectedSummaryLevel === 'High') simulatedSummary += `핵심 요약: ${baseTitle} 관련 주요 사항은... (생략)`;
-    else if (selectedSummaryLevel === 'Medium') simulatedSummary += `중간 요약: ${baseTitle} 문서의 주요 내용은 ${previewText.substring(0,100)}... 등이며... (중략)`;
-    else simulatedSummary += `상세 요약:\n${previewText}\n(파일 시작 부분 일부)`;
+    if (selectedSummaryLevel === 'High') {
+        analysisResult.detailedSummary = summaryHeader;
+        analysisResult.detailedSummary += `핵심 요약: ${baseTitle} 문서의 주요 내용은 ${analysisResult.keyTopics[0]} 관련 사항으로 보입니다. (상세 내용은 하위 요약 수준 참고)`;
+    } else if (selectedSummaryLevel === 'Medium') {
+        analysisResult.detailedSummary = summaryHeader;
+        analysisResult.detailedSummary += `중간 요약: ${baseTitle} 문서에서 다루는 주요 토픽은 ${analysisResult.keyTopics.join(', ')} 등이며, 주요 키워드는 ${analysisResult.extractedKeywords.join(', ')} 등이 추출되었습니다.\n잠재적 검토사항: ${analysisResult.potentialIssues.join(', ')}`;
+    } else { // Low
+        analysisResult.detailedSummary = summaryHeader;
+        analysisResult.detailedSummary += `상세 요약 (파일 시작 부분 일부):
+${previewText}
+---
+주요 토픽: ${analysisResult.keyTopics.join('\n- ')}
+키워드: ${analysisResult.extractedKeywords.join(', ')}
+잠재 이슈: ${analysisResult.potentialIssues.join('\n- ')}`;
+    }
 
-    let simulatedInsights = `주요 분석 인사이트 (${baseTitle}):\n`;
-    simulatedInsights += `- 핵심 이슈: 관련 쟁점 파악 필요.\n`;
-    simulatedInsights += `- 잠재적 모순점: ${fileReadSuccess ? '상반 내용 검토 필요.' : '데이터 부족.'}\n`;
-    simulatedInsights += `- 제안 사항: 목적 기반 추가 분석/활용 모색.`;
-
-    console.log("Analysis simulation finished.");
-    return { summary: simulatedSummary, insights: simulatedInsights, isRealData: fileReadSuccess };
+    console.log("Enhanced analysis simulation finished.", analysisResult);
+    return analysisResult; // 구조화된 객체 반환
 }
 
 // --- *** 파일 목록 UI 업데이트 함수 (중요!) *** ---
@@ -275,7 +397,7 @@ function handleDeleteFile(event) {
     }
 }
 
-// --- 분석 시작 버튼 핸들러 ---
+// --- 분석 시작 버튼 핸들러 (Step 2 표시 로직 수정) ---
 async function handleAnalysis() {
     console.log("Analyze button clicked.");
     const analyzeButton = document.getElementById('analyze-button');
@@ -283,7 +405,7 @@ async function handleAnalysis() {
     const analysisResultsSection = document.getElementById('analysis-results-section'); // Step 2
     const filterSection = document.getElementById('filter-section'); // Step 3
     const extractedTextarea = document.getElementById('extracted-text');
-    const analysisInsightsPre = document.getElementById('analysis-insights');
+    const analysisInsightsPre = document.getElementById('analysis-insights'); // 주요 분석 인사이트 영역
     const summaryLevelRadio = document.querySelector('input[name="summary_level"]:checked');
 
     if (!summaryLevelRadio) { alert("요약 수준을 선택해주세요."); return; }
@@ -299,24 +421,42 @@ async function handleAnalysis() {
     hideTemplateStructureView();
 
     try {
+        // *** 수정: 이제 구조화된 객체를 받음 ***
         currentAnalysisResults = await readFileAndSimulateAnalysis(selectedFilesArray, selectedSummaryLevel);
         console.log("Analysis simulation complete:", currentAnalysisResults);
 
-        if(extractedTextarea) extractedTextarea.value = currentAnalysisResults.summary || "[요약 정보 없음]";
-        if(analysisInsightsPre) analysisInsightsPre.textContent = currentAnalysisResults.insights || "[분석 인사이트 없음]";
+        // *** 수정: 새로운 데이터 구조에 맞게 UI 업데이트 ***
+        if(extractedTextarea) {
+            extractedTextarea.value = currentAnalysisResults?.detailedSummary || "[요약 정보 없음]";
+        }
+        
+        if(analysisInsightsPre) {
+            let insightsText = "";
+            insightsText += `주요 토픽: ${currentAnalysisResults?.keyTopics?.join(', ') || 'N/A'}\n`;
+            insightsText += `추출 키워드: ${currentAnalysisResults?.extractedKeywords?.join(', ') || 'N/A'}\n`;
+            insightsText += `감성 분석 (추정): ${currentAnalysisResults?.sentimentAnalysis || 'N/A'}\n`;
+            insightsText += `잠재적 검토사항: ${currentAnalysisResults?.potentialIssues?.join(', ') || 'N/A'}\n`;
+            insightsText += `---\n`;
+            insightsText += `파일 정보: ${currentAnalysisResults?.sourceFileName || 'N/A'} (${currentAnalysisResults?.wordCount || 0} 단어, ${currentAnalysisResults?.detectedLanguage || '언어 감지 불가'})`;
+            analysisInsightsPre.textContent = insightsText;
+        }
 
         showElement(analysisResultsSection); // Step 2 표시
         showElement(filterSection);          // Step 3 표시
-        populatePurposeDropdown();          // 용도 드롭다운 채우기
+        // populatePurposeDropdown(); // 이제 fetchTemplates 성공 시 호출되므로 여기서는 제거
         resetFilterDependents();            // 하위 필터 초기화
     } catch (error) {
         console.error("Error during analysis simulation:", error);
         alert(`분석 중 오류 발생: ${error.message}`);
-        if(analysisResultsSection) analysisResultsSection.innerHTML = '<p style="color: red;">분석 처리 중 오류가 발생했습니다.</p>';
+        if(analysisResultsSection) {
+            // 오류 시에도 이전 내용을 지우고 메시지 표시
+            if(extractedTextarea) extractedTextarea.value = ""; 
+            if(analysisInsightsPre) analysisInsightsPre.textContent = "";
+            analysisResultsSection.innerHTML = '<p style="color: red;">분석 처리 중 오류가 발생했습니다.</p>';
+        }
         showElement(analysisResultsSection); // 오류 메시지 표시
     } finally {
         hideElement(analysisLoading);
-        // 분석 버튼은 파일이 있을 때만 다시 활성화
         if(analyzeButton && selectedFilesArray.length > 0) analyzeButton.disabled = false;
     }
 }
@@ -713,7 +853,63 @@ print("PPTX Code Simulation Complete")
     return code;
 }
 
-// --- Step 3 -> Step 4(미리보기) 생성 핸들러 ---
+// --- 미리보기 내용 생성 (텍스트 강화 및 스타일 정보 추가) ---
+function generatePreviewContent(purpose, subtype, templateData, analysisResults, format, spec) {
+    console.log(`Generating preview for: ${purpose} - ${subtype}`);
+    
+    let title = templateData?.doc_subtype || subtype || "(제목 없음)"; 
+    let structure = "(목차 정보 없음)";
+    let summary = "(요약 정보 없음)";
+    let styleInfo = "(스타일 정보 없음)"; // 스타일 정보 추가
+
+    if (templateData) {
+        // 구조 생성 (기존과 동일)
+        if (templateData.layout_structure) {
+            structure = templateData.layout_structure.split(/\s*-\s*|\s*:\s*|\s*->\s*|\s*→\s*|\n/)
+                                       .map(item => `- ${item.trim()}`)
+                                       .filter(item => item.length > 3)
+                                       .join('\n');
+            if (!structure || structure.trim() === '-') structure = "- 주요 내용 1\n- 주요 내용 2\n- 결론";
+        } else {
+            structure = "- 주요 내용 1\n- 주요 내용 2\n- 결론";
+        }
+
+        // 요약 생성 강화
+        if (analysisResults?.summary && analysisResults.isRealData) {
+            // 실제 분석 결과 요약 활용 (최대 3줄 또는 250자)
+            const summaryLines = analysisResults.summary.split('\n');
+            summary = summaryLines[0].replace(/^\s*\[.*\]\s*분석 결과\s*\(.*\):\s*/, '').trim(); // 첫 줄 접두사 제거
+            if (summaryLines.length > 1) summary += "\n" + summaryLines[1];
+            if (summaryLines.length > 2) summary += "\n" + summaryLines[2];
+            if (summary.length > 250) summary = summary.substring(0, 250) + "...";
+            summary += "\n(출처: 업로드된 파일 분석 결과)";
+        } else {
+            // 템플릿 정보 기반 일반 문구
+            summary = `[${templateData.doc_subtype || '문서'}]는 ${templateData.target_audience || '대상'}을 위해 '${templateData.writing_goal || subtype}' 목적으로 생성될 예정입니다.\n`;
+            if (templateData.insight_focus) {
+                 summary += `주요 고려사항: ${templateData.insight_focus.slice(0, 2).join(', ')} 등`;
+            }
+        }
+
+        // 스타일 정보 생성
+        styleInfo = `시각 테마: ${templateData.visual_theme || 'N/A'}\n`;
+        styleInfo += `톤앤매너: ${templateData.tone_style || 'N/A'}\n`;
+        styleInfo += `색상 팔레트: ${templateData.color_palette?.join(', ') || 'N/A'}\n`;
+        styleInfo += `글꼴 조합: ${templateData.font_pair?.join(', ') || 'N/A'}`;
+
+    } else {
+        console.warn("generatePreviewContent: templateData is missing!");
+        summary = "템플릿 정보를 불러올 수 없어 요약 미리보기를 생성할 수 없습니다."; 
+    }
+
+    // 길이 제한 (기존과 동일)
+    if (structure.length > 500) structure = structure.substring(0, 500) + "\n...";
+    // if (summary.length > 500) summary = summary.substring(0, 500) + "..."; // 요약 길이 제한은 위에서 처리
+
+    return { title, structure, summary, styleInfo }; // styleInfo 추가
+}
+
+// --- Step 3 -> Step 4(미리보기) 생성 핸들러 (이미지 표시 로직 추가) ---
 function handleGenerateClick() {
     console.log("handleGenerateClick function called.");
     const purposeSelect = document.getElementById('doc_purpose');
@@ -725,6 +921,9 @@ function handleGenerateClick() {
     const previewTitle = document.getElementById('preview-title');
     const previewStructure = document.getElementById('preview-structure');
     const previewSummary = document.getElementById('preview-summary');
+    const previewStyleInfo = document.getElementById('preview-style-info'); // 스타일 정보 요소
+    const previewSampleImage = document.getElementById('preview-sample-image'); // 이미지 요소
+    const previewImagePlaceholder = document.getElementById('preview-image-placeholder'); // 이미지 없을 때 표시할 요소
 
     const selectedPurpose = purposeSelect?.value;
     const selectedSubtype = subtypeSelect?.value;
@@ -762,68 +961,40 @@ function handleGenerateClick() {
         try {
             const previewData = generatePreviewContent(selectedPurpose, selectedSubtype, templateData, analysisData);
             console.log("Generated preview data:", previewData);
+            
+            // 텍스트 내용 표시
             if(previewTitle) previewTitle.textContent = previewData.title;
             if(previewStructure) previewStructure.textContent = previewData.structure;
             if(previewSummary) previewSummary.textContent = previewData.summary;
-            hideElement(generationLoading); showElement(previewSection);
+            if(previewStyleInfo) previewStyleInfo.textContent = previewData.styleInfo; // 스타일 정보 표시
+
+            // 샘플 이미지 표시 로직
+            if (previewSampleImage && previewImagePlaceholder) {
+                const imageUrl = templateData.sample_image_url;
+                if (imageUrl && imageUrl.trim() !== "") {
+                    previewSampleImage.src = imageUrl;
+                    showElement(previewSampleImage);
+                    hideElement(previewImagePlaceholder);
+                    console.log(`Displaying sample image: ${imageUrl}`);
+                } else {
+                    hideElement(previewSampleImage);
+                    showElement(previewImagePlaceholder);
+                    console.log("No sample image URL found for this template.");
+                }
+            } else {
+                console.error("Preview image elements not found!");
+            }
+
+            hideElement(generationLoading);
+            showElement(previewSection);
             console.log("Preview generated and shown successfully.");
         } catch (error) {
             console.error("Error generating or displaying preview content:", error);
             hideElement(generationLoading);
             alert("미리보기 생성 중 오류가 발생했습니다.");
-             if(filterSection) showElement(filterSection);
+             if(filterSection) showElement(filterSection); // 오류시 필터 섹션은 확실히 보이게
         }
     }, 500);
-}
-
-// --- 미리보기 내용 생성 (제목 로직 수정 + 하드코딩 제거) ---
-function generatePreviewContent(purpose, subtype, templateData, analysisResults, format, spec) {
-    console.log(`Generating preview for: ${purpose} - ${subtype}`);
-    
-    // 제목: doc_subtype 사용
-    let title = templateData?.doc_subtype || subtype || "(제목 없음)"; 
-    
-    let structure = "(목차 정보 없음)";
-    let summary = "(요약 정보 없음)";
-
-    if (templateData) {
-        // 구조 생성 로직 (기존과 동일)
-        if (templateData.layout_structure) {
-            structure = templateData.layout_structure.split(/\s*-\s*|\s*:\s*|\s*->\s*|\s*→\s*|\n/)
-                                       .map(item => `- ${item.trim()}`)
-                                       .filter(item => item.length > 3)
-                                       .join('\n');
-            if (!structure || structure.trim() === '-') structure = "- 주요 내용 1\n- 주요 내용 2\n- 결론";
-        } else {
-            structure = "- 주요 내용 1\n- 주요 내용 2\n- 결론";
-        }
-
-        // 요약 생성 로직 (하드코딩 제거 및 동적 내용 생성)
-        let insightPreview = templateData.insight_focus ? `주요 고려사항: ${templateData.insight_focus.slice(0, 2).join(', ')} 등` : '';
-        
-        // isRealData를 사용하여 실제 분석 결과가 있는지 확인
-        if (analysisResults?.summary && analysisResults.isRealData) {
-            // 실제 분석 요약의 첫 줄 사용 (하드코딩된 샘플 텍스트 제거)
-            summary = analysisResults.summary.split('\n')[0]; 
-            // 만약 분석 결과 요약이 '[파일이름] 분석 결과 (수준 요약):' 형식이라면, 해당 부분 제거 시도
-            summary = summary.replace(/^\s*\[.*\]\s*분석 결과\s*\(.*\):\s*/, '').trim(); 
-            summary = summary.substring(0, 150) + (summary.length > 150 ? "..." : ""); // 길이 제한
-            summary += "\n"; // 줄바꿈 추가
-        } else {
-            // 분석 결과 없거나 실제 데이터 아니면, 템플릿 정보 기반 일반 문구 생성
-            summary = `[${templateData.doc_subtype || '문서'}]는 ${templateData.target_audience || '대상'}을 위해 '${templateData.writing_goal || subtype}' 목적으로 생성될 예정입니다.\n`;
-        }
-        summary += insightPreview; // 분석 강조점 추가
-    } else {
-        console.warn("generatePreviewContent: templateData is missing!");
-        summary = "템플릿 정보를 불러올 수 없어 요약 미리보기를 생성할 수 없습니다."; // 오류 메시지 명확화
-    }
-
-    // 길이 제한 (기존과 동일)
-    if (structure.length > 500) structure = structure.substring(0, 500) + "\n...";
-    if (summary.length > 500) summary = summary.substring(0, 500) + "...";
-
-    return { title, structure, summary };
 }
 
 // --- Step 4 -> Step 5 (최종 문서 생성) 핸들러 --- 
@@ -895,7 +1066,7 @@ function handleFinalGenerateClick() {
                 // 기존 안내 메시지가 있다면 제거 후 추가
                 const existingInfo = generatedDocSection?.querySelector('p');
                 if(existingInfo && existingInfo.textContent.startsWith('Info:')) existingInfo.remove();
-                generatedDocSection?.insertBefore(formatInfo, generatedContentTextarea?.nextSibling);
+                generatedDocSection?.appendChild(formatInfo); // appendChild로 변경하여 섹션 끝에 추가
 
             } else {
                 // 실제 콘텐츠 생성 (HTML, Markdown, TXT 등)
@@ -925,7 +1096,7 @@ function handleFinalGenerateClick() {
 // ==========================================================================
 // ======================= DOM 로드 후 실행 (리스너 재확인) =================
 // ==========================================================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // async 추가
     console.log("DOM fully loaded. Setting up listeners...");
 
     // --- 요소 참조 (기존과 동일) ---
@@ -939,6 +1110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalGenerateButton = document.getElementById('final-generate-button'); // Step 4 -> 5 버튼
     const editOptionsButton = document.getElementById('edit-options-button'); // Step 4 -> 3 버튼
     const toggleTemplateButton = document.getElementById('toggle-template-view-button'); // 템플릿 보기 버튼
+    const restartButton = document.getElementById('restart-button'); // 새로 시작 버튼 추가
 
     // --- 이벤트 리스너 설정 (모든 버튼 연결 확인) ---
     if (fileInput) fileInput.addEventListener('change', handleFileSelect);
@@ -959,7 +1131,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (pageSpecSelect) pageSpecSelect.addEventListener('change', checkGenerateButtonState);
     else console.error("#page_spec_select missing!");
 
-    // Step 3 -> 4 (미리보기 생성) 버튼
     if (generateButton) {
          console.log("Attaching listener to #generate-button (Preview)");
          generateButton.addEventListener('click', handleGenerateClick);
@@ -967,7 +1138,6 @@ document.addEventListener('DOMContentLoaded', () => {
          console.error("#generate-button missing!"); 
     }
 
-    // Step 4 -> 5 (최종 생성) 버튼
     if (finalGenerateButton) {
         console.log("Attaching listener to #final-generate-button");
         finalGenerateButton.addEventListener('click', handleFinalGenerateClick);
@@ -975,7 +1145,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("#final-generate-button missing!"); 
     }
 
-    // Step 4 -> 3 (옵션 수정) 버튼
     if (editOptionsButton) {
         console.log("Attaching listener to #edit-options-button");
         editOptionsButton.addEventListener('click', handleEditOptionsClick);
@@ -983,7 +1152,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("#edit-options-button missing!"); 
     }
 
-    // 템플릿 보기/숨기기 버튼
     if (toggleTemplateButton) {
         console.log("Attaching listener to #toggle-template-view-button");
         toggleTemplateButton.addEventListener('click', displayTemplateStructure);
@@ -991,7 +1159,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("#toggle-template-view-button missing!"); 
     }
 
+    // 새로 시작 버튼 리스너 (예시)
+    if (restartButton) {
+        console.log("Attaching listener to #restart-button");
+        restartButton.addEventListener('click', initializeUI); // 클릭 시 초기화
+    } else {
+        console.error("#restart-button missing!");
+    }
+
     // 초기 UI 설정
-    initializeUI();
-    console.log("Initialization and listeners setup complete.");
+    initializeUI(); // 여기서는 기본 UI만 초기화
+
+    // *** Supabase에서 템플릿 데이터를 비동기적으로 로드 ***
+    await fetchTemplates(); // await 사용
+
+    console.log("Initialization, listeners setup, and template fetch attempt complete.");
 });

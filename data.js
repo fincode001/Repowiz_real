@@ -14,7 +14,8 @@ const reportWizTemplates = [
     "tone_style": "객관적, 논리적, 설득적",
     "supportedOutputFormats": ["PPT", "Markdown", "HTML", "TXT", "PDF"],
     "template_source": "Internal", // 프롬프트 출처 (기본값)
-    "last_updated": "2024-07-28" // 최종 수정일 (기본값)
+    "last_updated": "2024-07-28", // 최종 수정일 (기본값)
+    "sample_image_url": ""
   },
   {
     "template_id": "report-weekly_monthly",
@@ -30,14 +31,14 @@ const reportWizTemplates = [
     "tone_style": "간결, 명료, 사실 기반",
     "supportedOutputFormats": ["PPT"], // 기존 데이터 유지 (없으면 기본값 사용됨)
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "report-result",
     "doc_purpose": "보고서",
     "doc_subtype": "결과 보고서",
     "target_audience": "프로젝트 책임자, 관련 부서",
-    "writing_goal": "프로젝트 또는 특정 활동의 결과를 상세히 기록하고 평가",
     // "output_format": ["Word", "PDF"], // supportedOutputFormats 사용
     "visual_theme": "상세, 체계적",
     "color_palette": ["#d0021b", "#417505", "#f8e71c", "#bd10e0", "#777777"],
@@ -47,7 +48,8 @@ const reportWizTemplates = [
     "tone_style": "상세, 분석적, 객관적",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "report-market_research",
@@ -64,7 +66,8 @@ const reportWizTemplates = [
     "tone_style": "정보 전달 중심, 분석적, 통찰력 제시",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "proposal-solution_product",
@@ -80,7 +83,8 @@ const reportWizTemplates = [
     "tone_style": "설득적, 고객 중심, 자신감, 전문성, 가치 제안",
     "supportedOutputFormats": ["PPT", "PDF", "Word"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "proposal-collaboration_partnership",
@@ -96,7 +100,8 @@ const reportWizTemplates = [
     "tone_style": "협력적, 신뢰감 형성, 상호 존중, 비전 제시",
     "supportedOutputFormats": ["PDF", "Word", "PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "proposal-marketing_ad_agency",
@@ -112,7 +117,8 @@ const reportWizTemplates = [
     "tone_style": "창의적, 결과 지향적, 설득력, 데이터 기반, 전문성",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "proposal-government_rfp",
@@ -128,7 +134,8 @@ const reportWizTemplates = [
     "tone_style": "논리적, 체계적, 신뢰성 강조, 공문서 형식 준수, 객관성",
     "supportedOutputFormats": ["PDF", "HWP", "Word"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "proposal-investment_ir_deck",
@@ -144,7 +151,8 @@ const reportWizTemplates = [
     "tone_style": "비전 제시, 설득력, 자신감, 간결함, 데이터 기반, 스토리텔링",
     "supportedOutputFormats": ["PPT", "PDF"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "plan-new_business",
@@ -160,7 +168,8 @@ const reportWizTemplates = [
     "tone_style": "설득적, 열정적, 논리적 근거 제시",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "plan-service_improvement",
@@ -176,7 +185,8 @@ const reportWizTemplates = [
     "tone_style": "분석적, 논리적, 구체적 실행 방안 제시",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "plan-marketing_strategy",
@@ -192,7 +202,8 @@ const reportWizTemplates = [
     "tone_style": "전략적, 설득력, 데이터 기반",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "presentation-company_introduction",
@@ -208,7 +219,8 @@ const reportWizTemplates = [
     "tone_style": "전문적, 신뢰감, 간결 명료",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "presentation-project_proposal",
@@ -224,7 +236,8 @@ const reportWizTemplates = [
     "tone_style": "논리적, 설득적, 자신감",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "presentation-conference_seminar",
@@ -240,7 +253,8 @@ const reportWizTemplates = [
     "tone_style": "전달력, 흥미 유발, 명확성",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "other-meeting_minutes",
@@ -256,7 +270,8 @@ const reportWizTemplates = [
     "tone_style": "객관적, 명료, 요점 중심",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "other-press_release",
@@ -272,7 +287,8 @@ const reportWizTemplates = [
     "tone_style": "객관적, 정보 전달, 간결",
     "supportedOutputFormats": ["PPT"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   },
   {
     "template_id": "notice-event_info",
@@ -288,7 +304,8 @@ const reportWizTemplates = [
     "tone_style": "친절함, 정보 제공, 명확성, 독려적",
     "supportedOutputFormats": ["Email", "HTML", "PDF", "Image"],
     "template_source": "Internal",
-    "last_updated": "2024-07-28"
+    "last_updated": "2024-07-28",
+    "sample_image_url": ""
   }
   // ... (기존 데이터에 더 많은 항목이 있다면 여기에 계속 추가)
 ]; // 배열 정의를 여기서 올바르게 닫음

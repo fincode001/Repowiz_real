@@ -110,19 +110,25 @@
         </div>
 
         <!-- *** Step 4: 미리보기 (구 3.5) *** -->
-        <div id="preview-section" class="step-container" style="display: none;">
-            <h2>Step 4: 생성될 내용 미리보기</h2>
+        <div id="preview-section" class="section-box" style="display: none;">
+            <h3>Step 4: 생성될 내용 미리보기</h3>
             <div class="analysis-output">
                 <p id="preview-title" style="font-weight: bold; font-size: 1.1em; margin-top: 0; margin-bottom: 15px;"></p>
-                <h3>주요 내용 구조 (예상 목차):</h3>
+                <h4>주요 내용 구조 (예상 목차):</h4>
                 <pre id="preview-structure"></pre>
-                <h3>핵심 요약 (미리보기):</h3>
+                <h4>핵심 요약 (미리보기):</h4>
                 <pre id="preview-summary"></pre>
+                <h4>템플릿 스타일 정보:</h4>
+                <pre id="preview-style-info"></pre>
+                
+                <h4>샘플 시각 스타일 (이미지):</h4>
+                <div id="preview-image-container" style="margin-top: 10px; text-align: center;"> 
+                    <img id="preview-sample-image" src="" alt="템플릿 샘플 이미지" style="display: none; max-width: 100%; height: auto; border: 1px solid #ddd; margin-top: 5px;">
+                    <p id="preview-image-placeholder" style="color: #888; font-size: 0.9em; display: none;">샘플 이미지가 없거나 준비 중입니다.</p>
+                </div>
             </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button id="final-generate-button" class="button">최종 문서 생성 (Step 5)</button>
-                <button id="edit-options-button" class="button" style="background-color: #6c757d;">옵션 수정 (Step 3)</button>
-            </div>
+            <button id="final-generate-button" class="button">최종 문서 생성 (Step 5)</button>
+            <button id="edit-options-button" class="button secondary">옵션 수정 (Step 3)</button>
         </div>
 
         <!-- *** Step 5: 생성된 문서 저장 (구 4) *** -->
@@ -132,11 +138,20 @@
             <div id="generated-content-wrapper">
                  <textarea id="generated-content" rows="15" readonly></textarea>
             </div>
-            <p id="simulation-notice"><em>(안내 문구 또는 다운로드 버튼이 여기에 표시됩니다)</em></p>
+            <p id="simulation-notice" style="font-size: 0.9em; color: #666; margin-top: 10px; padding: 10px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; display: none;"> </p> <!-- 안내 메시지 스타일링 및 기본 숨김 -->
+            
+            <!-- 버튼 영역 추가 -->
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="download-button" class="button" style="display: none;">파일 다운로드</button>
+                <button id="copy-button" class="button secondary" style="display: none;">내용 복사</button>
+                <button id="restart-button" class="button tertiary" style="display: none;">새로 시작하기</button> 
+            </div>
         </div>
 
     </div>
-    <script src="data.js"></script>
+    <!-- Supabase JS 라이브러리 추가 (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- <script src="data.js"></script> --> <!-- data.js 로드 제거 -->
     <script src="script.js"></script>
 </body>
 </html>
